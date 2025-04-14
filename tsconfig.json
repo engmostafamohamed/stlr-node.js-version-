@@ -9,7 +9,7 @@
   },
   "include": [
     "src/**/*",                 
-    "api/vercel.ts",            // ✅ include Vercel entry file
+    "api/index.ts",            // ✅ include Vercel entry file
     "migrate-mongo-config.ts",  
     "prisma/seed.ts"            
   ],

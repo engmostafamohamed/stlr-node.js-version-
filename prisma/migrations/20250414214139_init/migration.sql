@@ -23,6 +23,8 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `phone` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `verified` BOOLEAN NOT NULL DEFAULT false,
+    `status` ENUM('active', 'pending', 'suspended') NOT NULL DEFAULT 'pending',
     `roleId` INTEGER NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
@@ -34,7 +36,6 @@ CREATE TABLE `PasswordResetOTP` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
     `otp` VARCHAR(191) NOT NULL,
-    `verified` BOOLEAN NOT NULL DEFAULT false,
     `expires_at` DATETIME(3) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
