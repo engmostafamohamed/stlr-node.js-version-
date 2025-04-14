@@ -10,6 +10,7 @@
     "migrate": "prisma migrate deploy",
     "migrate:init": "npx prisma migrate dev --name init",
     "start": "npm run build && npm run migrate && nodemon dist/src/server.js",
+    "postinstall": "prisma generate",
     "rollback": "migrate-mongo down",
     "lint": "eslint . --ext .ts",
     "test": "jest",
@@ -58,6 +59,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
