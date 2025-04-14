@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",              
+    "outDir": "./dist",          
+    "target": "es6",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "strict": true
+  },
+  "include": [
+    "src/**/*",                 
+    "api/vercel.ts",            // ✅ include Vercel entry file
+    "migrate-mongo-config.ts",  
+    "prisma/seed.ts"            
+  ],
+  "exclude": ["node_modules"]
+}
