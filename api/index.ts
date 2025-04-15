@@ -1,23 +1,18 @@
-// api/index.ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import serverlessExpress from '@vendia/serverless-express';
 import app from '../src/app';
 import connectDB from '../src/config/database';
 
-let server: any;
 let isConnected = false;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (!isConnected) {
-    try {
-      await connectDB();
+  try {
+    if (!isConnected) {
+      await connectDB(); // your custom db logic using Prisma
       isConnected = true;
-      server = serverlessExpress({ app });
-    } catch (err) {
-      console.error('Failed to connect to DB:', err);
-      return res.status(500).json({ message: 'Database connection failed' });
     }
+    app(req, res); // assuming `app` is your express instance
+  } catch (err) {
+    console.error('Handler error:', err);
+    res.status(500).json({ message: 'Server error', error: err });
   }
-
-  return server(req, res);
 }
