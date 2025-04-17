@@ -1,7 +1,7 @@
 import express from "express";
 import { validateRegister , handleValidationErrors} from "../middleware/validateRegister";
 import { validateSendOtp, validateVerifyOtp,validateResetPassword } from "../middleware/authMiddleware";
-import { register, login,sendOtpController,verifyOtpController,resetPasswordController,requestResetPasswordController,verifyResetOtpController} from "../controllers/AuthController";
+import { register, login,sendOtpController,verifyOtpController,resetPasswordController,requestResetPasswordController} from "../controllers/AuthController";
 const router = express.Router();
 /**
  * @swagger
@@ -161,7 +161,7 @@ router.post("/request-reset-password", validateSendOtp, handleValidationErrors, 
  *       200:
  *         description: OTP verified successfully
  */
-router.post("/verify-reset-Otp", validateVerifyOtp, handleValidationErrors, verifyResetOtpController);
+// router.post("/verify-reset-Otp", validateVerifyOtp, handleValidationErrors, verifyResetOtpController);
 
 /**
  * @swagger

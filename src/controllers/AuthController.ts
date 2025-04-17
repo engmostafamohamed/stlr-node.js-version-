@@ -35,7 +35,7 @@ export const sendOtpController = async (req: Request, res: Response) => {
 
 // Verify OTP
 export const verifyOtpController = async (req: Request, res: Response) => {
-  const response: IApiResponse<null> = await verifyOtp(req.body.email, req.body.otp,req.t);
+  const response: IApiResponse<null> = await verifyOtp(req.body.email, req.body.otp_code,req.t);
   res.status(response.statusCode).json(response);
 };
 
@@ -46,10 +46,10 @@ export const requestResetPasswordController = async (req: Request, res: Response
 };
 
 // verify Reset Otp
-export const verifyResetOtpController = async (req: Request, res: Response) => {
-  const response: IApiResponse<null> = await verifyOtp(req.body.email, req.body.otp,req.t);
-  res.status(response.statusCode).json(response);
-};
+// export const verifyResetOtpController = async (req: Request, res: Response) => {
+//   const response: IApiResponse<null> = await verifyOtp(req.body.email, req.body.otp,req.t);
+//   res.status(response.statusCode).json(response);
+// };
 
 // reset Password
 export const resetPasswordController = async (req: Request, res: Response) => {

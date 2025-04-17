@@ -36,6 +36,8 @@ CREATE TABLE `PasswordResetOTP` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
     `otp` VARCHAR(191) NOT NULL,
+    `verified` BOOLEAN NOT NULL DEFAULT false,
+    `type` VARCHAR(191) NOT NULL,
     `expires_at` DATETIME(3) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 

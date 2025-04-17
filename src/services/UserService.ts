@@ -46,6 +46,24 @@ export const registerUser = async (
         },
       },
     });
+    const otpCode = generateOTP();
+
+    // Store OTP in PasswordResetOTP table
+    await prisma.passwordResetOTP.create({
+      data: {
+        email,
+        otp: otpCode,
+        type: "email_verification",
+        expires_at: new Date(Date.now() + 10 * 60 * 1000), // expires in 10 minutes
+      },
+    });
+    // Sending OTP email
+    try {
+      await sendOTPByEmail(email, otpCode);
+    } catch (error) {
+      console.error('Failed to send OTP:', error);
+      return errorResponse(t("EMAIL_SENDING_FAILED"), 500);
+    }
 
     return successResponse("Customer registered successfully", {
       id: newUser.user_id.toString(),
@@ -120,7 +138,8 @@ export const sendOtp = async (email: string, t: (key: string) => string): Promis
   } else if (user.verified) {
     return errorResponse(t("validation.email_already_verified"), 400);
   }
-
+  // Decide OTP type based on email verification status
+  const otpType = user.verified ? "reset_password" : "email_verification";
   const otpCode = generateOTP();
 
   // Store OTP in PasswordResetOTP table
@@ -128,10 +147,10 @@ export const sendOtp = async (email: string, t: (key: string) => string): Promis
     data: {
       email,
       otp: otpCode,
+      type: otpType,
       expires_at: new Date(Date.now() + 10 * 60 * 1000), // expires in 10 minutes
     },
   });
-
   // Sending OTP email
   try {
     await sendOTPByEmail(email, otpCode);
@@ -145,7 +164,7 @@ export const sendOtp = async (email: string, t: (key: string) => string): Promis
 
 export const verifyOtp = async (
   email: string,
-  otp: string,
+  otp_code: string,
   t: (key: string) => string
 ): Promise<IApiResponse<null>> => {
   const user = await prisma.user.findUnique({
@@ -156,37 +175,45 @@ export const verifyOtp = async (
     return errorResponse(t("validation.email_not_found"), 404);
   }
 
-  // if (user.verified) {
-  //   return errorResponse(t("validation.email_already_verified"), 409);
-  // }
-
   const otpRecord = await prisma.passwordResetOTP.findFirst({
     where: { email },
-    orderBy: { created_at: "desc" }, // In case of multiple OTPs
+    orderBy: { created_at: "desc" },
   });
 
   if (
     !otpRecord ||
-    otpRecord.otp !== otp ||
+    otpRecord.otp !== otp_code ||
     otpRecord.expires_at < new Date()
   ) {
     return errorResponse(t("validation.invalid_or_expired_otp"), 400);
   }
-  // Update user
-  await prisma.user.update({
-    where: { email },
-    data: {
-      verified: true,
-      status: "active",
-    },
-  });
 
-  // Optionally delete used OTP
-  await prisma.passwordResetOTP.deleteMany({
-    where: { email },
-  });
-  return successResponse(t("validation.verified_otp"), null, 200);
+  let responseMessage = "";
+
+  if (otpRecord.type === "email_verification") {
+    await prisma.user.update({
+      where: { email },
+      data: {
+        verified: true,
+        status: "active",
+      },
+    });
+    await prisma.passwordResetOTP.deleteMany({ where: { email } });
+    responseMessage = t("validation.account_verified");
+  } else if (otpRecord.type === "reset_password") {
+    // no user update needed here
+    await prisma.passwordResetOTP.update({
+      where: { id: otpRecord.id },
+      data: {
+        verified: true,
+      },
+    });
+
+    responseMessage = t("validation.verified_otp");
+  }
+  return successResponse(responseMessage, null, 200);
 };
+
 
 // requestResetPassword
 export const requestResetPassword = async (
@@ -209,6 +236,7 @@ export const requestResetPassword = async (
     data: {
       email,
       otp: otpCode,
+      type:"reset_password",
       expires_at: new Date(Date.now() + 10 * 60 * 1000), // expires in 10 minutes
     },
   });
@@ -223,26 +251,6 @@ export const requestResetPassword = async (
   return successResponse(t("validation.send_otp"), null, 200);
 };
 
-// verify Reset Otp for resetPassword
-// export const verifyResetOtp = async (
-//   email: string,
-//   otp: string,
-//   t: (key: string) => string
-// ): Promise<IApiResponse<null>> => {
-//   const user = await prisma.user.findUnique({ where:{email} });
-//   if (!user) {
-//     return errorResponse(t("validation.email_not_found"), 404);
-//   }
-//   if (!user.otp || user.otp.code !== otp || user.otp.expires_at < new Date()) {
-//     return errorResponse(t("validation.invalid_or_expired_otp"), 400);
-//   }
-  
-//   user.otp = null; // Clear OTP after verification
-//   await user.save();
-
-//   return successResponse(t("validation.verified_rest_password_otp"), null, 200);
-// };
-
 // resetPassword
 export const resetPassword = async (
   email: string,
@@ -255,6 +263,19 @@ export const resetPassword = async (
     return errorResponse(t("validation.email_not_found"), 404);
   }
 
+  // Ensure a verified OTP exists
+  const verifiedOtp = await prisma.passwordResetOTP.findFirst({
+    where: {
+      email,
+      verified: true,
+      // expires_at: { gte: new Date() },
+    },
+  });
+
+  if (!verifiedOtp) {
+    return errorResponse(t("validation.otp_not_verified"), 403);
+  }
+
   const hashedPassword = await hashPassword(newPassword);
 
   await prisma.user.update({
@@ -264,6 +285,12 @@ export const resetPassword = async (
     },
   });
 
+  // Cleanup OTPs after successful reset
+  await prisma.passwordResetOTP.deleteMany({
+    where: { email },
+  });
+
   return successResponse(t("validation.password_reset"), null, 200);
 };
+
 
