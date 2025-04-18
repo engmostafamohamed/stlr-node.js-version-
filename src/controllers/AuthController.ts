@@ -5,7 +5,7 @@ import { IUser } from '../interfaces/User'
 import { IAuthResponse } from '../interfaces/AuthResponse'
 import { AuthRequest } from '../interfaces/AuthRequest'
 import { IApiResponse } from '../interfaces/ApiResponse'
-import { registerUser, loginUser,sendOtp, verifyOtp, requestResetPassword  ,resetPassword,} from '../services/UserService';
+import { registerUser, loginUser,sendOtp, verifyOtp, requestResetPassword  ,resetPassword,socialLoginService } from '../services/UserService';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { email, password, user_name ,phoneNumber } = req.body;
@@ -54,5 +54,12 @@ export const requestResetPasswordController = async (req: Request, res: Response
 // reset Password
 export const resetPasswordController = async (req: Request, res: Response) => {
   const response: IApiResponse<null> = await resetPassword(req.body.email,req.body.new_password,req.t);
+  res.status(response.statusCode).json(response);
+};
+
+// social login
+export const socialLoginController = async (req: Request, res: Response) => {
+  const { provider, profile } = req.body;
+  const response = await socialLoginService(provider, profile, req.t);
   res.status(response.statusCode).json(response);
 };

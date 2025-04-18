@@ -40,8 +40,8 @@ export const registerUser = async (
         username: userName ,
         email,
         password: hashedPassword,
-        phone: phoneNumber, // optional field
-        role: {
+        phone: phoneNumber,
+        roles: {
           connect: { id: role.id }, 
         },
       },
@@ -101,7 +101,7 @@ export const loginUser = async (email: string, password: string ,t: (key: string
         password: true,
         verified: true,
         status: true,
-        role: {
+        roles: {
           select: {
             name: true,
           },
@@ -122,7 +122,7 @@ export const loginUser = async (email: string, password: string ,t: (key: string
       return errorResponse(t("INVALID_CREDENTIALS"), 401);
     }
 
-    const token = generateToken(user.user_id.toString(),user.role?.name || 'customer');
+    const token = generateToken(user.user_id.toString(),user.roles?.[0]?.name || 'customer');
 
     return successResponse(t("LOGIN_SUCCESS"), { token }, 200);
   } catch (error) {
@@ -294,3 +294,71 @@ export const resetPassword = async (
 };
 
 
+// social login service
+export const socialLoginService = async (
+  provider: string,
+  profile: any,
+  t: (key: string) => string
+): Promise<IApiResponse<any>> => {
+  const email = profile.emails?.[0]?.value;
+  if (!email) {
+    return errorResponse(t("validation.email_required"), 400);
+  }
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      providerAccounts: true,
+      roles: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (user) {
+    const roleName = user.roles?.[0]?.name || "customer";
+    const token = generateToken(user.user_id.toString(), roleName);
+    return successResponse(t("auth.login_success"), { token, user }, 200);
+  }
+
+  const role = await prisma.role.findUnique({
+    where: { name: "customer" },
+  });
+
+  if (!role) {
+    return errorResponse("Default role not found", 500);
+  }
+
+  // Use provider name as password (e.g., "google" or "apple")
+  const hashedPassword = await hashPassword(provider.toLowerCase());
+  const newUser = await prisma.user.create({
+    data: {
+      email,
+      username: profile.displayName || profile.name?.givenName || "New User",
+      phone: "",
+      password: hashedPassword,
+      verified: true,
+      status: "active",
+      roles: {
+        connect: { id: role.id },
+      },
+      providerAccounts: {
+        create: {
+          provider,
+        },
+      },
+    },
+    include: {
+      roles: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const roleName = newUser.roles?.[0]?.name || "customer";
+  const token = generateToken(newUser.user_id.toString(), roleName);
+  return successResponse(t("auth.register_success"), { token, user: newUser }, 201);
+};

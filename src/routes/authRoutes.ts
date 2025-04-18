@@ -1,7 +1,7 @@
 import express from "express";
 import { validateRegister , handleValidationErrors} from "../middleware/validateRegister";
-import { validateSendOtp, validateVerifyOtp,validateResetPassword } from "../middleware/authMiddleware";
-import { register, login,sendOtpController,verifyOtpController,resetPasswordController,requestResetPasswordController} from "../controllers/AuthController";
+import { validateSendOtp, validateVerifyOtp,validateResetPassword ,validateSocialLogin} from "../middleware/authMiddleware";
+import { register, login,sendOtpController,verifyOtpController,resetPasswordController,requestResetPasswordController ,socialLoginController} from "../controllers/AuthController";
 const router = express.Router();
 /**
  * @swagger
@@ -191,5 +191,7 @@ router.post("/request-reset-password", validateSendOtp, handleValidationErrors, 
  *         description: Password reset successfully
  */
 router.post("/reset-password", validateResetPassword, handleValidationErrors, resetPasswordController);
+router.post("/social-login",validateSocialLogin,handleValidationErrors,socialLoginController);
+
 
 export default router;

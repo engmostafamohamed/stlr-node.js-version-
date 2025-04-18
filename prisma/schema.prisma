@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   url      = env("DATABASE_URL")
@@ -20,9 +14,9 @@ enum UserStatus {
 }
 
 model Role {
-  id          Int         @id @default(autoincrement())
-  name        String      @unique
-  users       User[]
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  users       User[]       @relation("UserRoles")
   permissions Permission[] @relation("RolePermissions")
 }
 
@@ -41,10 +35,9 @@ model User {
   password    String
   verified     Boolean  @default(false)
   status      UserStatus @default(pending)
-  role        Role?     @relation(fields: [roleId], references: [id])
-  roleId      Int?
-
+  roles Role[] @relation("UserRoles")
   permissions Permission[] @relation("UserPermissions")
+  providerAccounts ProviderAccount[]
 }
 model PasswordResetOTP {
   id           Int      @id @default(autoincrement())
@@ -54,6 +47,12 @@ model PasswordResetOTP {
   type         String   // 'email_verification' | 'reset_password'
   expires_at   DateTime
   created_at   DateTime @default(now())
+}
+model ProviderAccount {
+  id       String   @id @default(cuid())
+  provider String
+  user     User     @relation(fields: [userId], references: [user_id])
+  userId   Int
 }
 
 

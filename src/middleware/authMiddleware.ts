@@ -50,3 +50,17 @@ body("password_confirmation")
     return true;
   }),
 ];
+
+// Validation for /social-login route
+export const validateSocialLogin = [
+  body("provider")
+    .notEmpty()
+    .withMessage((value, { req }) => req.t("validation.provider_required"))
+    .bail()
+    .isIn(["google", "apple"])
+    .withMessage((value, { req }) => req.t("validation.provider_invalid")),
+
+  body("idToken")
+    .notEmpty()
+    .withMessage((value, { req }) => req.t("validation.idToken_required")),
+];
