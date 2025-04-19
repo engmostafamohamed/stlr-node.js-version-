@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
+
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -43,10 +44,10 @@ async function main() {
       email: adminEmail,
       phone: '0000000000',
       password: adminPassword,
-      role: {
-        connect: { id: adminRole.id },
+      roles: {
+        connect: [{ id: adminRole.id }],
       },
-    },
+    } as Prisma.UserCreateInput
   });
 
   console.log('Admin user seeded.');
