@@ -1,7 +1,7 @@
 import connectDB from "./config/database";
 import app from "./app"; // Your Express app
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Connect to database and start the server
 connectDB()
