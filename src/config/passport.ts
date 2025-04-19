@@ -21,7 +21,7 @@ passport.use(new AppleStrategy(
     clientID: process.env.APPLE_CLIENT_ID!,
     teamID: process.env.APPLE_TEAM_ID!,
     keyID: process.env.APPLE_KEY_ID!,
-    privateKeyString: process.env.APPLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+    key: process.env.APPLE_PRIVATE_KEY!.replace(/\\n/g, "\n"), // <-- change here
     callbackURL: process.env.APPLE_REDIRECT_URI!,
   },
   async (

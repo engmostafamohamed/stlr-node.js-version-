@@ -1,21 +1,34 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, RequestHandler } from 'express'
 import jwt from 'jsonwebtoken'
 import { AuthRequest } from '../interfaces/AuthRequest'
 import { body} from "express-validator";
 
-export const authenticate = (req: AuthRequest , res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.split(' ')[1]
+
+export const authenticate: RequestHandler = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  const token = req.header('Authorization')?.split(' ')[1];
+
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' })
+    res.status(401).json({ message: req.t('auth.Unauthorized') });
+    return; // avoid returning res directly
   }
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
-    req.user = decoded 
-    next()
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    req.user = decoded;
+    next();
   } catch (error) {
-    res.status(403).json({ message: 'Invalid token' })
+    res.status(403).json({ message: req.t('auth.Invalid token') });
   }
-}
+};
+
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!req.user || !req.user.roles || !req.user.roles.includes("admin")) {
+    res.status(403).json({ message: req.t("auth.Access denied. Admins only.") });
+    return
+  }
+  next();
+};
+
 // Validation for Login
 export const validateLogin = [
   body("email").isEmail().withMessage((value,{req})=>req.t("validation.Invalid_email")),

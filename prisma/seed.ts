@@ -21,7 +21,6 @@ async function main() {
     });
   }
 
-  console.log('Roles seeded.');
 
   const adminEmail = 'admin@admin.com';
   const adminPassword = await bcrypt.hash('admin123', 10);

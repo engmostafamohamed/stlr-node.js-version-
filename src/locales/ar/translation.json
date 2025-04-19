@@ -18,6 +18,11 @@
         "role_required": "الدور مطلوب",
         "email_not_verified":"الحساب غير مفعل",
         "email_not_verified_or_deleted":"تم إيقاف الحساب او تم حذفة"
-    }
+    }, 
+    "auth": {
+        "unauthorized": "غير مصرح",
+        "invalid_token": "رمز مميز غير صالح",
+        "admin_only": "تم الرفض. المسؤولون فقط."
+      }
 }
   

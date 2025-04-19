@@ -33,11 +33,15 @@ model User {
   email       String    @unique
   phone       String
   password    String
-  verified     Boolean  @default(false)
+  verified    Boolean   @default(false)
   status      UserStatus @default(pending)
-  roles Role[] @relation("UserRoles")
-  permissions Permission[] @relation("UserPermissions")
+  deletedAt   DateTime?  
+
+  roles            Role[]       @relation("UserRoles")
+  permissions      Permission[] @relation("UserPermissions")
   providerAccounts ProviderAccount[]
+
+  @@index([deletedAt]) // optional: improves querying non-deleted users
 }
 model PasswordResetOTP {
   id           Int      @id @default(autoincrement())
