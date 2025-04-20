@@ -16,9 +16,9 @@ dotenv.config();
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
-app.use(session({ secret: "keyboard cat", resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(session({ secret: "keyboard cat", resave: false, saveUninitialized: false }));
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Middlewares
 app.use(cors())
