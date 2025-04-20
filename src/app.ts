@@ -15,7 +15,7 @@ import "./config/passport"; // 👈 Register strategies globally
 dotenv.config();
 
 const app = express();
-
+const isProduction = process.env.NODE_ENV === "production";
 app.use(session({ secret: "keyboard cat", resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -24,7 +24,10 @@ app.use(passport.session());
 app.use(cors())
 app.use(helmet())
 app.use(compression())
-app.use(morgan('dev'))
+if (!isProduction) {
+    app.use(morgan("dev"));
+}
+  
 app.use(express.json())
 
 // Use the middleware for localization
